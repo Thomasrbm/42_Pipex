@@ -1,0 +1,109 @@
+
+
+
+
+
+Open :
+
+renvoit le fd qu il vient d open.
+Parem = permission sur le fichier :
+  O_RDONLY = lecture seule 
+  O_WRONLY = ecriture seule
+  O_RDWR = les 2
+
+ O_CREAT = le cree si existe pas
+ O_TRUNC = supprime si y avait truc dans fichier
+ O_APPEND = ecrit a la suite du fichie (pour le signe >>)
+
+
+
+ close : 
+
+    pour ne pas laisser de fd ouverts
+
+    car un fd ouvert prend de la ram.
+
+    1024 fd ouvert max en meme temps
+
+
+
+
+access :
+
+verifie les droit du fichier
+
+
+
+unlink :
+
+rm un fichier
+
+
+
+
+
+
+
+fork :
+
+pid_t pid = fork();
+
+
+duplique le programme : dans le parent donne le pid du fils
+
+et le fils renvoit 0. 
+
+-1 s erreur
+
+
+
+
+
+
+execve : 
+
+
+remplace le programme par un autre (la suite du code s execute pas)
+
+
+pathname, argv et env 
+
+pathname = chemin absolue de la commande
+argv = le vrai commande dans un double tableau avec les flag -l etc + NULL a la fin
+et l env. 
+
+
+
+
+
+
+wait : 
+
+attend n importe quel processus et return le pid du termine
+
+status = WIFEXITED ou WEXITSTATUS
+
+WIFEXITED = s est termine normalement
+WEXITSTATUS = a retourner un code d erreur 
+
+
+
+
+
+waitpid : 
+
+attends specifiquement 
+
+
+
+
+dup (old fd) :
+
+pointe vers le meme objet mais n ont pas le meme fd
+
+
+
+
+dup2 : 
+
+fait pointer newfd sur oldfd 
