@@ -8,6 +8,14 @@ OBJDIR = ./objects
 SRCS = main.c \
 	   pipex.c \
 	   libft/printers/ft_putstr_fd.c \
+	   libft/comparers/ft_strncmp.c \
+	   libft/splitters/ft_substr.c \
+	   libft/splitters/ft_split.c \
+	   libft/splitters/ft_strjoin.c \
+	   libft/sizers/ft_strlen.c \
+	   libft/allocs/ft_strdup.c \
+	   libft/allocs/ft_memcpy.c \
+	   libft/searchers/ft_strchr.c \
 
 OBJS = $(patsubst %.cpp,$(OBJDIR)/%.o,$(SRCS))
 

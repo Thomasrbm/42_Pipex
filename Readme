@@ -1,4 +1,45 @@
 
+REDIRECTION :
+
+
+de base :
+
+ls -l  = (pas de stdin) sortie dans le stdout
+
+cat seul (boucle infini) = lit le stdin puis l ecrit dans stdout
+
+wc + ctrl +d = lit le stdin puis out dans stdout
+
+
+
+
+
+
+avec pipe '|'  : 
+
+
+ls -l | wc =  ecrit le ls dans le pipe et le wc lit depuit le pipe ET le met dans stdout.
+
+
+
+
+
+avec redirection : 
+
+
+< : ce qui suit devient stdin
+
+> : devient stdout.
+
+
+< infile cat | wc  -l > outfile  = lit depuis le infile, le cat dans le pipe, wc lit depuis le pipe et ecrit vers outfile
+
+
+
+
+
+
+
 
 
 
@@ -17,7 +58,7 @@ Parem = permission sur le fichier :
 
 
 
- close : 
+close : 
 
     pour ne pas laisser de fd ouverts
 
@@ -55,6 +96,16 @@ et le fils renvoit 0.
 
 -1 s erreur
 
+
+
+
+
+
+pipe(pipefd[2])  : 
+
+
+parent : ecrit dans 1
+child : lit dans 0
 
 
 
@@ -104,6 +155,6 @@ pointe vers le meme objet mais n ont pas le meme fd
 
 
 
-dup2 : 
+dup2(old, new) : 
 
 fait pointer newfd sur oldfd 
