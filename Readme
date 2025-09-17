@@ -101,13 +101,6 @@ et le fils renvoit 0.
 
 
 
-pipe(pipefd[2])  : 
-
-
-parent : ecrit dans 1
-child : lit dans 0
-
-
 
 
 
@@ -158,3 +151,50 @@ pointe vers le meme objet mais n ont pas le meme fd
 dup2(old, new) : 
 
 fait pointer newfd sur oldfd 
+
+
+donc celui a gauche = la ou on veut redirect
+
+et a droite = ce qu on veut redirect
+
+dup2(fd_file, STDIN_FILENO);
+
+ca fait = fichier devient le stdin
+
+
+
+
+
+
+pipe(pipefd[2])  : 
+
+
+parent : ecrit dans 1
+child : lit dans 0
+
+
+
+
+
+
+
+
+------------------- EXPLICATIONS --------------------------------
+
+
+C est  le pid PARENT (donc celui different de 0)  qui ira au bout du main
+
+
+wait pour pas que le main se finisse sans que les cmd s exec 
+
+
+LES DUP2 doivent etre hors de pipe
+
+le infile devient stdin
+le pipe 0 devient stdout
+
+
+puis
+
+le pipe1 devient le stdin
+le outfile devient le stdout
