@@ -6,7 +6,7 @@
 /*   By: throbert <throbert@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/10 23:05:51 by throbert          #+#    #+#             */
-/*   Updated: 2025/09/17 15:43:16 by throbert         ###   ########.fr       */
+/*   Updated: 2025/09/18 20:11:51 by throbert         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,71 +51,70 @@ char	*get_abs_path(char *path, char *cmd)
 	return (merged_try);
 }
 
-// void	ft_exec(char *absolute_path, char **cmd, char **env)
-// {
+void	ft_exec_cmd1(char *absolute_path, char **cmd, char **env, char *file)
+{
+	int	fd_file;
+	int	pipefd[2];
+	int	pipe_success;
 
-// }
+	pipe_success = pipe(pipefd);
+	if (pipe_success < 0)
+		exit(1);
+	fd_file = open(file, O_RDONLY);
+	dup2(fd_file, STDIN_FILENO);
+	close(fd_file);
+	dup2(pipefd[1], STDOUT_FILENO);
+	close(pipefd[1]);
+	close(pipefd[0]);
+	if (execve(absolute_path, cmd, env) == -1)
+	{
+		perror("execve");
+		exit(EXIT_FAILURE);
+	}
+}
+
+void	ft_exec_cmd2(char *absolute_path, char **cmd, char **env, char *file)
+{
+	int	fd_file;
+	int	pipefd[2];
+	int	pipe_success;
+
+	pipe_success = pipe(pipefd);
+	if (pipe_success < 0)
+		exit(1);
+	fd_file = open(file, O_CREAT | O_RDWR | O_TRUNC, 0755);
+	dup2(fd_file, STDOUT_FILENO);
+	close(fd_file);
+	dup2(pipefd[0], STDIN_FILENO);
+	close(pipefd[0]);
+	close(pipefd[1]);
+	if (execve(absolute_path, cmd, env) == -1)
+	{
+		perror("execve");
+		exit(EXIT_FAILURE);
+	}
+}
 
 // pb si commande avec flag
-
 int	main(int ac, char **av, char **env)
 {
 	pid_t	pid[2];
-	char	**cmd;
-	char	*path;
-	char	*absolute_path;
 	int		status;
-	int		pipefd[2];
-	int		pipe_success;
-	int		fds[2];
 
 	if (ac != 5)
 		return (ft_putstr_fd_int("Wrong number of arguments", 2));
-	path = get_path(env);
-	pipe_success = pipe(pipefd);
-	if (pipe_success < 0)
-	{
-		free(path);
-		exit(1);
-	}
 	pid[0] = fork();
 	if (!pid[0])
 	{
-		fds[1] = open(av[1], O_RDONLY);
-		dup2(fds[1], STDIN_FILENO);
-		close(fds[1]);
-		dup2(pipefd[1], STDOUT_FILENO);
-		close(pipefd[1]);
-		close(pipefd[0]);
-		cmd = ft_split(av[2], ' ');
-		absolute_path = get_abs_path(path, ft_strjoin("/", cmd[0]));
-		if (execve(absolute_path, cmd, env) == -1)
-		{
-			perror("execve");
-			exit(EXIT_FAILURE);
-		}
+		ft_exec_cmd1(get_abs_path(get_path(env), ft_strjoin("/", &av[2][0])),
+			ft_split(av[2], ' '), env, av[1]);
 	}
-	waitpid(pid[0], &status, 0);
-	status = WEXITSTATUS(status);
 	pid[1] = fork();
 	if (!pid[1])
 	{
-		fds[0] = open(av[4], O_CREAT | O_RDWR | O_TRUNC, 0755);
-		dup2(fds[0], STDOUT_FILENO);
-		close(fds[0]);
-		dup2(pipefd[0], STDIN_FILENO);
-		close(pipefd[0]);
-		close(pipefd[1]);
-		cmd = ft_split(av[3], ' ');
-		absolute_path = get_abs_path(path, ft_strjoin("/", cmd[0]));
-		if (execve(absolute_path, cmd, env) == -1)
-		{
-			perror("execve");
-			exit(EXIT_FAILURE);
-		}
+		ft_exec_cmd2(get_abs_path(get_path(env), ft_strjoin("/", &av[3][0])),
+			ft_split(av[3], ' '), env, av[4]);
 	}
-	close(pipefd[0]);
-	close(pipefd[1]);
 	while (waitpid(-1, &status, 0) == -1)
 		;
 	status = WEXITSTATUS(status);

@@ -185,6 +185,8 @@ child : lit dans 0
 C est  le pid PARENT (donc celui different de 0)  qui ira au bout du main
 
 
+mettre bonnes permes dans les opens sinon va pas redirect correctement
+
 wait pour pas que le main se finisse sans que les cmd s exec 
 
 
@@ -198,3 +200,13 @@ puis
 
 le pipe1 devient le stdin
 le outfile devient le stdout
+
+
+
+
+
+NE pas close les pipe dans l exec apres le dup peut empecher la commande
+
+
+
+le pipe en param de open
