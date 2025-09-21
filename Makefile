@@ -17,11 +17,11 @@ SRCS = main.c \
 	   libft/allocs/ft_memcpy.c \
 	   libft/searchers/ft_strchr.c \
 
-OBJS = $(patsubst %.cpp,$(OBJDIR)/%.o,$(SRCS))
+OBJS = $(patsubst %.c,$(OBJDIR)/%.o,$(SRCS))
 
 RM = rm -f
 
-all: $(NAME)
+all: libft $(NAME)
 	@echo "Compiled successfully!"
 	@EXEC_LINE="=> execute ./$(NAME) [Input file] [cmd 1] [cmd 2] [output file]"; \
 	LEN=$$(echo "$$EXEC_LINE" | wc -c); \
@@ -34,10 +34,19 @@ all: $(NAME)
 	echo "$$MID"; \
 	echo "$$BOT\033[0m"
 
+libft:
+	@if [ ! -d "libft" ]; then \
+		echo "\033[33mCloning libft repository...\033[0m"; \
+		git clone git@github.com:Thomasrbm/42_Turbo-Libft.git libft; \
+		echo "\033[32mLibft cloned successfully!\033[0m"; \
+	else \
+		echo "\033[33mLibft directory already exists.\033[0m"; \
+	fi
+
 $(NAME): $(OBJS)
 	@$(CC) $(CFLAGS) -o $(NAME) $(OBJS)
 
-$(OBJDIR)/%.o: %.cpp
+$(OBJDIR)/%.o: %.c
 	@mkdir -p $(dir $@)
 	@$(CC) $(CFLAGS) -c $< -o $@
 
@@ -59,6 +68,15 @@ fclean: clean
 		echo "\033[33mNo executable to clean.\033[0m"; \
 	fi
 
+libclean:
+	@if [ -d "libft" ]; then \
+		echo "\033[33mRemoving libft directory...\033[0m"; \
+		$(RM) -r libft; \
+		echo "\033[32mLibft directory removed successfully!\033[0m"; \
+	else \
+		echo "\033[33mNo libft directory to clean.\033[0m"; \
+	fi
+
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all libft clean fclean libclean re
