@@ -12,9 +12,11 @@ SRCS = main.c \
 	   libft/splitters/ft_substr.c \
 	   libft/splitters/ft_split.c \
 	   libft/splitters/ft_strjoin.c \
+	   libft/splitters/ft_strlcpy.c \
 	   libft/sizers/ft_strlen.c \
 	   libft/allocs/ft_strdup.c \
 	   libft/allocs/ft_memcpy.c \
+	   libft/allocs/free_tab.c \
 	   libft/searchers/ft_strchr.c \
 
 OBJS = $(patsubst %.c,$(OBJDIR)/%.o,$(SRCS))
