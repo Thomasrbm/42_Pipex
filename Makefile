@@ -6,7 +6,8 @@ CFLAGS = -Wall -Wextra -Werror -g3
 OBJDIR = ./objects
 
 SRCS = main.c \
-	   pipex.c \
+	   utils.c \
+	   clean_utils.c \
 	   libft/printers/ft_putstr_fd.c \
 	   libft/comparers/ft_strncmp.c \
 	   libft/splitters/ft_substr.c \
@@ -16,7 +17,7 @@ SRCS = main.c \
 	   libft/sizers/ft_strlen.c \
 	   libft/allocs/ft_strdup.c \
 	   libft/allocs/ft_memcpy.c \
-	   libft/allocs/free_tab.c \
+	   libft/allocs/free_split.c \
 	   libft/searchers/ft_strchr.c \
 
 OBJS = $(patsubst %.c,$(OBJDIR)/%.o,$(SRCS))
@@ -70,7 +71,7 @@ fclean: clean
 		echo "\033[33mNo executable to clean.\033[0m"; \
 	fi
 
-libclean:
+cleanlib:
 	@if [ -d "libft" ]; then \
 		echo "\033[33mRemoving libft directory...\033[0m"; \
 		$(RM) -r libft; \

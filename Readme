@@ -1,5 +1,162 @@
 
+
+
+PIPE  DEFINITION : 
+
+
+
+un pipe execute tout en simultanee.
+
+cat | cat | ls
+
+cat lit stdin et ecrit pour cat
+
+cat lit cat et ecrit pour ls 
+
+ls lit dans fd courrant et ecrit dans stdout 
+
+
+
+
+le pipe attend la fin de tous les processus avant d afficher le resultat. 
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+SIGPIPE  = 
+
+
+Le processus 1 ecrit dans le 2 MAIS le 2 a deja finit et exit donc il ferme sa lecture.
+le 1 recoit donc un SIGPIPE et abort. 
+
+
+
+
+
+
+comme ls ne lit pas dans le deuxieme pipe ce pipe il a finit sans attendre le cat et il a fermer le pipe.
+
+
+SIGPIPE = lire dans un pipe ferme / dont le processus a termine =    annule la commande qui usait un pipe apres elle.
+
+
+ICI le ls se fait , le cat d avant est annule puis le cat d avant est annule. 
+
+Ici besoin de faire deux fois entree car commande bloquante et pipe doit attendre la fin de tout pour afficher le resultat ici = SIGPIPE donc rien d autre que ls. 
+le SIGPIPE va tuer tout en cascade avant lui. 
+
+
+
+pk avec cat mais pas avec  ls | cat | cat | ls ? 
+
+pck le cat lit le ls puis l autre lit le cat donc il se sont finito sans pb.
+
+le pb au dessus c est que les cat attendent une entree avant de marcheer
+
+
+
+ca fait un SIGPIPE avec wc | ls aussi 
+
+
+yes | head -n1
+
+    yes produit une infinité de « y ».
+
+    head prend la première ligne et quitte → le tube est fermé.
+
+    yes essaie d’écrire encore → reçoit SIGPIPE.
+
+
+yes | false
+
+    false termine aussitôt (sans lire).
+
+    yes écrit dans un pipe sans lecteur → SIGPIPE.
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+POURQUOI ON NEED TO WAIT ? 
+
+pck quand un enfant fini il exit mais il reste un structure qui contient 
+son statut qui reste la prendre de la meme tant que non lu par le parent
+
+donc :
+
+1/ tu sature la table de processus
+2/ ca prend de la ram 
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+POURQUOI ON NEED TO FORK ? 
+
+
+1/ simultane 
+
+pour tout faire d un coup et pas a la suite dans un prog
+
+2/ execve
+
+pour aller chercher les programme natif et vu que execve ferme l actuel
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+POURQUOI ON NEED TO CLOSE ? 
+
+
+1/ memoire 
+
+pck ca fait de la memoire use pour rien  + 
+
+2/ Nb fd max
+
+1024 fd max 
+
+3/ DEADLOCK
+
+ICI si on close pas le pipe d ecriture, le lecteur va attendre indefiniment car recoit jamais le EOF de l ecriture donc le fichier est jamais fini d ecrire donc illisible.
+
+pck le pipe doit attendre que tout soit finit et tout soit close pour envoyer le resultat final.
+sinon on reste initly stuck
+
+
+
+------------------------------------------------------------------  fds et env  ----------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+fds = id des objet du pc :
+
+* fichiers 
+* pipe
+* socket etc
+
+
+et l env : 
+
+des donnes fournie par l os et la config  et utile pour des programme. 
+
+
+------------------------------------------------------------------  FONCTIONS  ----------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
 REDIRECTION :
+
+
+
+
+
+
+
 
 
 de base :
@@ -37,6 +194,8 @@ avec redirection :
 
 
 
+
+on ecrit dans le pipe1 et lit dans 0
 
 
 
@@ -210,3 +369,28 @@ NE pas close les pipe dans l exec apres le dup peut empecher la commande
 
 
 le pipe en param de open
+
+
+
+
+
+
+
+valgrind --track-fds=yes --trace-children=yes --leak-check=full  ./pipex infile cat cat outfile
+valgrind --track-fds=yes --trace-children=yes --leak-check=full < infile cat | cat > outfile
+
+
+
+
+valgrind --track-fds=yes --trace-children=yes --leak-check=full  ./pipex infile cat ls outfile      ===> ne pas pas fix l ecart
+valgrind --track-fds=yes --trace-children=yes --leak-check=full < infile cat | ls > outfile
+
+
+
+
+
+
+
+valgrind --track-fds=yes --trace-children=yes --leak-check=full < infile cat | "exit 0" > outfile
+
+valgrind --track-fds=yes --trace-children=yes --leak-check=full ./pipex infile cat "exit 0" outfile

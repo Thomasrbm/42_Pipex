@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/10 23:06:56 by throbert          #+#    #+#             */
-/*   Updated: 2025/09/27 03:57:41 by marvin           ###   ########.fr       */
+/*   Updated: 2025/10/04 02:07:08 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,12 @@
 
 #define PATH_LENGTH 5
 
+#define WRITING_1 1
+#define READING_0 0
+#define STDOUT 1
+#define CMD_NOT_EXECUTABLE 126
+#define ERROR 1 
+
 typedef struct s_shared
 {
 	int		pipefd[2];
@@ -25,9 +31,13 @@ typedef struct s_shared
 	char	*path;
 }	t_shared;
 
-char	*alloc_cmd(char *cmd);
 void	ft_redirect(char *redirect, char *file);
 int		wait_for_children(pid_t *pid);
 int		ft_putstr_fd_int(char *s, int fd);
 int		init_shared(struct s_shared *shared, char **env);
 char	*get_path(char **env);
+void	clean_and_exit(char **cmd, char *abs_path,
+			int exit_code);
+char	*ft_strjoin3(char *s1, char *s2, char *s3);
+void	close_pipes(struct s_shared *shared);
+void	cleanup_exit(char **cmd, struct s_shared shared, int exit_code);

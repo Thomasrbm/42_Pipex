@@ -6,113 +6,113 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/10 23:05:51 by throbert          #+#    #+#             */
-/*   Updated: 2025/09/27 03:55:03 by marvin           ###   ########.fr       */
+/*   Updated: 2025/10/04 02:07:16 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-char	*get_path(char **env)
-{
-	int		i;
-	char	*to_find;
-
-	i = 0;
-	to_find = "PATH=";
-	while (env[i])
-	{
-		if (ft_strncmp(to_find, env[i], 5) == 0)
-			return (ft_substr(env[i], 5, ft_strlen(env[i]) - 5));
-		i++;
-	}
-	return (NULL);
-}
-
-char	*get_abs_path(char *path, char *cmd)
+char	*get_abs_path(char *path, char *cmd, struct s_shared shared)
 {
 	char	**to_try;
 	char	*merged_try;
 	int		i;
 
+	(void) shared;
 	i = 0;
 	to_try = ft_split(path, ':');
-	if (to_try == NULL)
+	if (!to_try)
 		return (NULL);
-	while (to_try[i] != NULL)
+	while (to_try[i])
 	{
-		merged_try = ft_strjoin(to_try[i], cmd);
+		merged_try = ft_strjoin3(to_try[i], "/", cmd);
 		if (access(merged_try, X_OK) == 0)
-			break ;
+		{
+			free_split(to_try);
+			return (merged_try);
+		}
+		free(merged_try);
 		i++;
 	}
-	return (merged_try);
+	free_split(to_try);
+	return (NULL);
 }
 
 void	ft_exec_cmd1(char *absolute_path, char **cmd,
-	char *file, struct s_shared shared)
+char *file, struct s_shared shared)
 {
-	int	fd_file;
+	int	infile;
 
-	fd_file = open(file, O_RDONLY);
-	if (fd_file < 0)
-		exit(1);
-	dup2(fd_file, STDIN_FILENO);
-	close(fd_file);
-	dup2(shared.pipefd[1], STDOUT_FILENO);
-	close(shared.pipefd[0]);
-	close(shared.pipefd[1]);
+	infile = open(file, O_RDONLY);
+	if (infile < 0)
+		clean_and_exit(cmd, absolute_path, ERROR);
+	dup2(infile, STDIN_FILENO);
+	dup2(shared.pipefd[WRITING_1], STDOUT_FILENO);
+	close(infile);
+	close(shared.pipefd[READING_0]);
+	close(shared.pipefd[WRITING_1]);
 	if (execve(absolute_path, cmd, shared.env) == -1)
 	{
 		perror("execve");
-		exit(126);
+		clean_and_exit(cmd, absolute_path, CMD_NOT_EXECUTABLE);
 	}
 }
 
 void	ft_exec_cmd2(char *absolute_path, char **cmd,
 	char *file, struct s_shared shared)
 {
-	int	fd_file;
+	int	outfile;
 
-	fd_file = open(file, O_CREAT | O_WRONLY | O_TRUNC, 0644);
-	if (fd_file < 0)
-		exit(1);
-	dup2(shared.pipefd[0], STDIN_FILENO);
-	dup2(fd_file, STDOUT_FILENO);
-	close(fd_file);
-	close(shared.pipefd[0]);
-	close(shared.pipefd[1]);
+	outfile = open(file, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+	if (outfile < 0)
+		clean_and_exit(cmd, absolute_path, ERROR);
+	dup2(shared.pipefd[READING_0], STDIN_FILENO);
+	dup2(outfile, STDOUT_FILENO);
+	close(outfile);
+	close(shared.pipefd[READING_0]);
+	close(shared.pipefd[WRITING_1]);
 	if (execve(absolute_path, cmd, shared.env) == -1)
 	{
 		perror("execve");
-		exit(126);
+		clean_and_exit(cmd, absolute_path, CMD_NOT_EXECUTABLE);
 	}
+}
+
+int	execute_commands(char *cmd_str, char *arg,
+	struct s_shared shared, int cmd_type)
+{
+	pid_t	pid;
+	char	**cmd;
+	char	*absolute_path;
+
+	pid = fork();
+	if (pid == 0)
+	{
+		cmd = ft_split(cmd_str, ' ');
+		if (!cmd || !cmd[0])
+			cleanup_exit(cmd, shared, 1);
+		absolute_path = get_abs_path(shared.path, cmd[0], shared);
+		if (!absolute_path)
+			cleanup_exit(cmd, shared, 1);
+		if (cmd_type == 1)
+			ft_exec_cmd1(absolute_path, cmd, arg, shared);
+		else
+			ft_exec_cmd2(absolute_path, cmd, arg, shared);
+	}
+	return (pid);
 }
 
 int	main(int ac, char **av, char **env)
 {
-	pid_t			pid[2];
-	char			**cmd;
-	struct s_shared	shared;
+	pid_t		pid[2];
+	t_shared	shared;
 
 	if (ac != 5)
 		return (ft_putstr_fd_int("Wrong number of arguments", 2));
 	if (init_shared(&shared, env))
 		return (1);
-	pid[0] = fork();
-	if (pid[0] == 0)
-	{
-		cmd = ft_split(av[2], ' ');
-		ft_exec_cmd1(get_abs_path(shared.path, ft_strjoin("/", cmd[0])), cmd,
-			av[1], shared);
-	}
-	pid[1] = fork();
-	if (pid[1] == 0)
-	{
-		cmd = ft_split(av[3], ' ');
-		ft_exec_cmd2(get_abs_path(shared.path, ft_strjoin("/", cmd[0])), cmd,
-			av[4], shared);
-	}
-	close(shared.pipefd[0]);
-	close(shared.pipefd[1]);
+	pid[0] = execute_commands(av[2], av[1], shared, 1);
+	pid[1] = execute_commands(av[3], av[4], shared, 2);
+	close_pipes(&shared);
 	return (wait_for_children(pid));
 }
