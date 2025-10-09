@@ -382,7 +382,7 @@ valgrind --track-fds=yes --trace-children=yes --leak-check=full < infile cat | c
 
 
 
-valgrind --track-fds=yes --trace-children=yes --leak-check=full  ./pipex infile cat ls outfile      ===> ne pas pas fix l ecart
+valgrind --track-fds=yes --trace-children=yes --leak-check=full  ./pipex infile cat ls outfile      ===> ne SIGPIPE pas mais les autres non plus 
 valgrind --track-fds=yes --trace-children=yes --leak-check=full < infile cat | ls > outfile
 
 
@@ -391,6 +391,18 @@ valgrind --track-fds=yes --trace-children=yes --leak-check=full < infile cat | l
 
 
 
-valgrind --track-fds=yes --trace-children=yes --leak-check=full < infile cat | "exit 0" > outfile
-
+valgrind --track-fds=yes --trace-children=yes --leak-check=full < infile cat | exit 0 > outfile
 valgrind --track-fds=yes --trace-children=yes --leak-check=full ./pipex infile cat "exit 0" outfile
+
+
+
+
+
+valgrind --track-fds=yes --trace-children=yes --leak-check=full < infile ls -l | wc -l > outfile
+valgrind --track-fds=yes --trace-children=yes --leak-check=full ./pipex infile  "ls -l" "wc -l" outfile
+
+
+
+
+valgrind --track-fds=yes --trace-children=yes --leak-check=full < infile grep a1 | wc -w > outfile
+valgrind --track-fds=yes --trace-children=yes --leak-check=full ./pipex infile "grep a1" "wc -w" outfile
