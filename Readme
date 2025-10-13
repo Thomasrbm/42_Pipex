@@ -374,6 +374,15 @@ le pipe en param de open
 
 
 
+le 
+
+>> = redir en out en apppend
+> = ecrase
+
+< redir stdin
+<< heredoc
+
+
 
 
 valgrind --track-fds=yes --trace-children=yes --leak-check=full  ./pipex infile cat cat outfile
@@ -384,9 +393,6 @@ valgrind --track-fds=yes --trace-children=yes --leak-check=full < infile cat | c
 
 valgrind --track-fds=yes --trace-children=yes --leak-check=full  ./pipex infile cat ls outfile      ===> ne SIGPIPE pas mais les autres non plus 
 valgrind --track-fds=yes --trace-children=yes --leak-check=full < infile cat | ls > outfile
-
-
-
 
 
 
@@ -406,3 +412,28 @@ valgrind --track-fds=yes --trace-children=yes --leak-check=full ./pipex infile  
 
 valgrind --track-fds=yes --trace-children=yes --leak-check=full < infile grep a1 | wc -w > outfile
 valgrind --track-fds=yes --trace-children=yes --leak-check=full ./pipex infile "grep a1" "wc -w" outfile
+
+
+
+
+
+----------------- pipex_bonus ---------------
+
+
+
+
+valgrind --track-fds=yes --trace-children=yes --leak-check=full < infile cat | cat | ls > outfile
+valgrind --track-fds=yes --trace-children=yes --leak-check=full ./pipex_bonus infile cat cat ls outfile 
+
+
+valgrind --track-fds=yes --trace-children=yes --leak-check=full  ./pipex_bonus infile "cat" "grep toto" "wc -l" outfile
+valgrind --track-fds=yes --trace-children=yes --leak-check=full  < infile cat | grep toto | wc -l outfile
+
+
+valgrind --track-fds=yes --trace-children=yes --leak-check=full ./pipex_bonus infile "yes" "head -n1" "wc -c" outfile  ==> va SIGPIPE
+valgrind --track-fds=yes --trace-children=yes --leak-check=full < infile yes | head -n1 | wc -c outfile
+
+
+
+valgrind --track-fds=yes --trace-children=yes --leak-check=full ./pipex_bonus infile "cat" "cut -d\  -f1" "sort" "uniq -c" "wc -l" outfile
+valgrind --track-fds=yes --trace-children=yes --leak-check=full cat < infile | cut -d' ' -f1 | sort | uniq -c | wc -l > outfile

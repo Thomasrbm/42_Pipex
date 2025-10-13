@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/10 23:06:56 by throbert          #+#    #+#             */
-/*   Updated: 2025/10/04 02:07:08 by marvin           ###   ########.fr       */
+/*   Updated: 2025/10/13 01:33:02 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,3 +41,5 @@ void	clean_and_exit(char **cmd, char *abs_path,
 char	*ft_strjoin3(char *s1, char *s2, char *s3);
 void	close_pipes(struct s_shared *shared);
 void	cleanup_exit(char **cmd, struct s_shared shared, int exit_code);
+int		execute_commands(char *cmd_str, char *arg,
+			struct s_shared shared, int cmd_type);

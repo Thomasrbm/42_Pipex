@@ -12,18 +12,20 @@
 
 #include "pipex_bonus.h"
 
-int	wait_for_children(pid_t *pid)
+int	wait_for_children(pid_t *pid, int cmd_count)
 {
 	int	status;
+	int	i;
 
-	waitpid(pid[0], &status, 0);
-	waitpid(pid[1], &status, 0);
+	i = 0;
+	while (i < cmd_count)
+		waitpid(pid[i++], &status, 0);
 	return (WEXITSTATUS(status));
 }
 
 void	cleanup_exit(char **cmd, struct s_shared shared, int exit_code)
 {
-	close_pipes(&shared);
+	close_all_pipes(&shared);
 	free_split(cmd);
 	exit(exit_code);
 }
@@ -37,8 +39,17 @@ void	clean_and_exit(char **cmd, char *abs_path, int exit_code)
 	exit(exit_code);
 }
 
-void	close_pipes(struct s_shared *shared)
+void    close_all_pipes(t_shared *sh)
 {
-	close(shared->pipefd[READING_0]);
-	close(shared->pipefd[WRITING_1]);
+    int i;
+    
+    i = 0;
+    while (i < sh->pipecount)
+    {
+        if (sh->pipefd[i][0] != -1)
+            close(sh->pipefd[i][0]);
+        if (sh->pipefd[i][1] != -1)
+            close(sh->pipefd[i][1]);
+        i++;
+    }
 }

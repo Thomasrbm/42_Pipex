@@ -12,107 +12,85 @@
 
 #include "pipex_bonus.h"
 
-char	*get_abs_path(char *path, char *cmd, struct s_shared shared)
+int init_pidtab(struct s_shared *shared)
 {
-	char	**to_try;
-	char	*merged_try;
-	int		i;
+    int     pid_nb;
+    
+    pid_nb = shared->pipecount + LASTCMD;
+    shared->pid = malloc(sizeof(pid_t) * pid_nb);
+    if (!shared->pid)
+        return (1);
+    return (0);
+}
 
-	(void) shared;
-	i = 0;
-	to_try = ft_split(path, ':');
-	if (!to_try)
-		return (NULL);
-	while (to_try[i])
+int	check_arguments(int ac, char **av)
+{
+	if (ac < 5)
 	{
-		merged_try = ft_strjoin3(to_try[i], "/", cmd);
-		if (access(merged_try, X_OK) == 0)
-		{
-			free_split(to_try);
-			return (merged_try);
-		}
-		free(merged_try);
-		i++;
+		ft_putstr_fd("Wrong number of arguments, Usage: ./pipex", 2);
+		return (ft_putstr_fd_int(" infile cmd1 cmd2 ... cmdN outfile\n", 2));
 	}
-	free_split(to_try);
-	return (NULL);
-}
-
-void	ft_exec_cmd1(char *absolute_path, char **cmd,
-char *file, struct s_shared shared)
-{
-	int	infile;
-
-	infile = open(file, O_RDONLY);
-	if (infile < 0)
-		clean_and_exit(cmd, absolute_path, ERROR);
-	dup2(infile, STDIN_FILENO);
-	dup2(shared.pipefd[WRITING_1], STDOUT_FILENO);
-	close(infile);
-	close(shared.pipefd[READING_0]);
-	close(shared.pipefd[WRITING_1]);
-	if (execve(absolute_path, cmd, shared.env) == -1)
+	if (ft_strncmp(av[1], "here_doc", 8) == 0 && ac < 6)
 	{
-		perror("execve");
-		clean_and_exit(cmd, absolute_path, CMD_NOT_EXECUTABLE);
+		ft_putstr_fd("Wrong number of arguments, Usage: ./pipex", 2);
+		return (ft_putstr_fd_int(" infile cmd1 cmd2 ... cmdN outfile\n", 2));
 	}
+	return (0);
 }
 
-void	ft_exec_cmd2(char *absolute_path, char **cmd,
-	char *file, struct s_shared shared)
+void    free_all(t_shared *shared)
 {
-	int	outfile;
-
-	outfile = open(file, O_CREAT | O_WRONLY | O_TRUNC, 0644);
-	if (outfile < 0)
-		clean_and_exit(cmd, absolute_path, ERROR);
-	dup2(shared.pipefd[READING_0], STDIN_FILENO);
-	dup2(outfile, STDOUT_FILENO);
-	close(outfile);
-	close(shared.pipefd[READING_0]);
-	close(shared.pipefd[WRITING_1]);
-	if (execve(absolute_path, cmd, shared.env) == -1)
-	{
-		perror("execve");
-		clean_and_exit(cmd, absolute_path, CMD_NOT_EXECUTABLE);
-	}
+    int i;
+    
+    close_all_pipes(shared);
+    if (shared->here_doc)
+    {
+        close(shared->here_doc_pipe[0]);
+        close(shared->here_doc_pipe[1]);
+    }
+    wait_for_children(shared->pid, shared->cmd_count);
+    i = 0;
+    while (i < shared->pipecount)
+        free(shared->pipefd[i++]);
+    free(shared->pipefd);
+    free(shared->pid);
 }
 
-int	execute_commands(char *cmd_str, char *arg,
-	struct s_shared shared, int cmd_type)
+void    run_all_commands(t_shared *shared, char **av)
 {
-	pid_t	pid;
-	char	**cmd;
-	char	*absolute_path;
-
-	pid = fork();
-	if (pid == 0)
-	{
-		cmd = ft_split(cmd_str, ' ');
-		if (!cmd || !cmd[0])
-			cleanup_exit(cmd, shared, 1);
-		absolute_path = get_abs_path(shared.path, cmd[0], shared);
-		if (!absolute_path)
-			cleanup_exit(cmd, shared, 1);
-		if (cmd_type == 1)
-			ft_exec_cmd1(absolute_path, cmd, arg, shared);
-		else
-			ft_exec_cmd2(absolute_path, cmd, arg, shared);
-	}
-	return (pid);
+    int i;
+    
+    i = 0;
+    while (i < shared->cmd_count)
+    {
+        shared->pid[i] = execute_commands(shared, av, i);
+        i++;
+    }
 }
 
-int	main(int ac, char **av, char **env)
+int main(int ac, char **av, char **env)
 {
-	pid_t		pid[2];
-	t_shared	shared;
-
-	if (ac != 5)
-		return (ft_putstr_fd_int("Wrong number of arguments", 2));
-	if (init_shared(&shared, env))
-		return (1);
-	pid[0] = execute_commands(av[2], av[1], shared, 1);
-	pid[1] = execute_commands(av[3], av[4], shared, 2);
-	close_pipes(&shared);
-	return (wait_for_children(pid));
+    t_shared    shared;
+    
+    if (check_arguments(ac, av))
+        return (1);
+    if (init_shared(&shared, env, ac, av))
+        return (1);
+    if (init_pidtab(&shared))
+        return (1);
+    if (ft_strncmp(av[1], "here_doc", 8) == 0)
+    {
+        if (handle_here_doc(&shared, av[2]))
+            return (1);
+        close(shared.here_doc_pipe[1]);
+    }
+    run_all_commands(&shared, av);
+    free_all(&shared);
+    return (0);
 }
+
+// mettre message d erreur si infile exite pas :   -bash: d: No such file or directory
+
+// pk faut un pipe a part pour le heredoc 
+
+// comment se stack les pid et pipe 
