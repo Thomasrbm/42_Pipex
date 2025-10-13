@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/03 20:37:01 by marvin            #+#    #+#             */
-/*   Updated: 2025/10/03 20:37:01 by marvin           ###   ########.fr       */
+/*   Updated: 2025/10/13 05:56:30 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,4 +54,13 @@ char	*ft_strjoin3(char *s1, char *s2, char *s3)
 	res = ft_strjoin(tmp, s3);
 	free(tmp);
 	return (res);
+}
+
+void	cmd_not_found(char **cmd, struct s_shared shared)
+{
+	close(shared.pipefd[READING_0]);
+	close(shared.pipefd[WRITING_1]);
+	ft_putstr_fd(cmd[0], 2);
+	ft_putstr_fd(": command not found\n", 2);
+	cleanup_exit(cmd, shared, 127);
 }

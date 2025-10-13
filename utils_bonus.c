@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/09 14:42:09 by marvin            #+#    #+#             */
-/*   Updated: 2025/10/09 14:42:09 by marvin           ###   ########.fr       */
+/*   Updated: 2025/10/13 05:57:28 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,33 +74,30 @@ int	init_pipes(struct s_shared *shared)
 	return (0);
 }
 
-int init_shared(struct s_shared *shared, char **env, int ac, char **av)
+int	init_shared(struct s_shared *shared, char **env, int ac, char **av)
 {
-    if (!shared)
-        return (1);
-    shared->env = env;
-    shared->path = get_path(env);
-    shared->here_doc = 0;
-    shared->pid = NULL;  // Initialiser à NULL
-    
-    if (ft_strcmp(av[1], "here_doc") == 0)
-    {
-        shared->here_doc = 1;
-        shared->pipecount = ac - EXEC_FILE_HD_LIM_AND_LASTCMD;
-        if (pipe(shared->here_doc_pipe) < 0)
-        {
-            perror("pipe");
-            return (1);
-        }
-    }
-    else
-        shared->pipecount = ac - EXEC_FILES_AND_LASTCMD;
-    
-    shared->cmd_count = shared->pipecount + 1;  // Calculer cmd_count
-    
-    if (init_pipes(shared))
-        return (1);
-    return (0);
+	if (!shared)
+		return (1);
+	shared->env = env;
+	shared->path = get_path(env);
+	shared->here_doc = 0;
+	shared->pid = NULL;
+	if (ft_strcmp(av[1], "here_doc") == 0)
+	{
+		shared->here_doc = 1;
+		shared->pipecount = ac - EXEC_FILE_HD_LIM_AND_LASTCMD;
+		if (pipe(shared->here_doc_pipe) < 0)
+		{
+			perror("pipe");
+			return (1);
+		}
+	}
+	else
+		shared->pipecount = ac - EXEC_FILES_AND_LASTCMD;
+	shared->cmd_count = shared->pipecount + 1;
+	if (init_pipes(shared))
+		return (1);
+	return (0);
 }
 
 char	*ft_strjoin3(char *s1, char *s2, char *s3)
