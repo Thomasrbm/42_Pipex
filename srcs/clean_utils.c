@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/10 23:06:13 by throbert          #+#    #+#             */
-/*   Updated: 2025/10/03 20:37:15 by marvin           ###   ########.fr       */
+/*   Updated: 2025/10/16 04:11:07 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,24 +21,23 @@ int	wait_for_children(pid_t *pid)
 	return (WEXITSTATUS(status));
 }
 
-void	cleanup_exit(char **cmd, struct s_shared shared, int exit_code)
+void	clean_exit(t_shared *shared, char **cmd, int exit_code)
 {
-	close_pipes(&shared);
-	free_split(cmd);
-	exit(exit_code);
-}
-
-void	clean_and_exit(char **cmd, char *abs_path, int exit_code)
-{
+	close_pipes(shared);
 	if (cmd)
 		free_split(cmd);
-	if (abs_path)
-		free(abs_path);
 	exit(exit_code);
 }
 
-void	close_pipes(struct s_shared *shared)
+void	close_pipes(t_shared *shared)
 {
-	close(shared->pipefd[READING_0]);
-	close(shared->pipefd[WRITING_1]);
+	close(shared->pipefd[READ_0]);
+	close(shared->pipefd[WRITE_1]);
+}
+
+void	cmd_not_found(char **cmd, t_shared *shared)
+{
+	close_pipes(shared);
+	ft_putstr_fd(cmd[0], 2);
+	ft_putstr_fd(": command not found\n", 2);
 }

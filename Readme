@@ -437,3 +437,12 @@ valgrind --track-fds=yes --trace-children=yes --leak-check=full < infile yes | h
 
 valgrind --track-fds=yes --trace-children=yes --leak-check=full ./pipex_bonus infile "cat" "cut -d\  -f1" "sort" "uniq -c" "wc -l" outfile
 valgrind --track-fds=yes --trace-children=yes --leak-check=full cat < infile | cut -d' ' -f1 | sort | uniq -c | wc -l > outfile
+
+
+
+
+
+
+
+
+le return du exit code : < infile cat | grep foo | grep bar

@@ -6,13 +6,12 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/03 20:37:01 by marvin            #+#    #+#             */
-/*   Updated: 2025/10/13 05:56:30 by marvin           ###   ########.fr       */
+/*   Updated: 2025/10/16 04:26:26 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-// le path= avec tous les paths possibles
 char	*get_path(char **env)
 {
 	int		i;
@@ -29,7 +28,7 @@ char	*get_path(char **env)
 	return (NULL);
 }
 
-int	init_shared(struct s_shared *shared, char **env)
+int	init_shared(t_shared *shared, char **env)
 {
 	if (!shared)
 		return (1);
@@ -38,29 +37,7 @@ int	init_shared(struct s_shared *shared, char **env)
 	if (pipe(shared->pipefd) < 0)
 	{
 		perror("pipe");
-		return (1);
+		return (0);
 	}
-	return (0);
-}
-
-char	*ft_strjoin3(char *s1, char *s2, char *s3)
-{
-	char	*tmp;
-	char	*res;
-
-	tmp = ft_strjoin(s1, s2);
-	if (!tmp)
-		return (NULL);
-	res = ft_strjoin(tmp, s3);
-	free(tmp);
-	return (res);
-}
-
-void	cmd_not_found(char **cmd, struct s_shared shared)
-{
-	close(shared.pipefd[READING_0]);
-	close(shared.pipefd[WRITING_1]);
-	ft_putstr_fd(cmd[0], 2);
-	ft_putstr_fd(": command not found\n", 2);
-	cleanup_exit(cmd, shared, 127);
+	return (1);
 }

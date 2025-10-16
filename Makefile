@@ -9,33 +9,24 @@ OBJDIR = ./objects
 BONUS_DIR = ./objects_bonus
 
 
-SRCS = pipex.c \
-	   utils.c \
-	   clean_utils.c \
+SRCS = srcs/pipex.c \
+	   srcs/utils.c \
+	   srcs/clean_utils.c \
+	   srcs/exec.c \
 	   libft/printers/ft_putstr_fd.c \
 	   libft/comparers/ft_strncmp.c \
-	   libft/splitters/ft_substr.c \
-	   libft/splitters/ft_split.c \
 	   libft/splitters/ft_strjoin.c \
-	   libft/splitters/ft_strlcpy.c \
 	   libft/sizers/ft_strlen.c \
-	   libft/allocs/ft_strdup.c \
-	   libft/allocs/ft_memcpy.c \
+	   libft/splitters/ft_split.c \
 	   libft/allocs/free_split.c \
-	   libft/searchers/ft_strchr.c \
 
-BONUS_SRCS = pipex_bonus.c utils_bonus.c here_doc_bonus.c clean_utils_bonus.c exec_bonus.c \
-	   libft/printers/ft_putstr_fd.c \
-	   libft/comparers/ft_strncmp.c \
-	   libft/splitters/ft_substr.c \
-	   libft/splitters/ft_split.c \
-	   libft/splitters/ft_strjoin.c \
-	   libft/splitters/ft_strlcpy.c \
-	   libft/sizers/ft_strlen.c \
-	   libft/allocs/ft_strdup.c \
-	   libft/allocs/ft_memcpy.c \
-	   libft/allocs/free_split.c \
-	   libft/searchers/ft_strchr.c \
+BONUS_SRCS = srcs_bonus/pipex_bonus.c srcs_bonus/init_shared_bonus.c  srcs_bonus/exec_bonus.c srcs_bonus/here_doc_bonus.c srcs_bonus/clean_utils_bonus.c \
+			libft/printers/ft_putstr_fd.c \
+			libft/comparers/ft_strncmp.c \
+			libft/splitters/ft_strjoin.c \
+			libft/sizers/ft_strlen.c \
+			libft/splitters/ft_split.c \
+			libft/allocs/free_split.c \
 
 OBJS = $(patsubst %.c,$(OBJDIR)/%.o,$(SRCS))
 BONUS_OBJS = $(patsubst %.c,$(BONUS_DIR)/%.o,$(BONUS_SRCS))
@@ -116,7 +107,7 @@ $(BONUS_NAME): $(BONUS_OBJS)
 	@ar rcs $(GNL_LIB) $(GNL_DIR)/get_next_line.o
 	@echo "\033[36mBuilding pipex bonus...\033[0m"
 	@$(CC) $(CFLAGS) $(BONUS_OBJS) $(GNL_LIB) -o $(BONUS_NAME)
-	@echo "\033[32m✅ pipex_bonus built successfully!\033[0m"
+	@echo "\033[32m✅ srcs_bonus built successfully!\033[0m"
 
 gnl:
 	@if [ ! -d "$(GNL_DIR)" ]; then \
